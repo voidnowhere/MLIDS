@@ -28,7 +28,7 @@ export class AppComponent {
     effect(() => {
       this.items = [
         {label: 'Home', icon: PrimeIcons.HOME, routerLink: 'home'},
-        {label: 'My links', icon: PrimeIcons.LINK, routerLink: 'links', visible: this.authService.loggedIn()},
+        {label: 'Extract', icon: PrimeIcons.ID_CARD, routerLink: 'extract', visible: this.authService.loggedIn()},
       ];
       this._loggedIn = this.authService.loggedIn();
     });

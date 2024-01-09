@@ -42,7 +42,7 @@ export class LoginComponent {
           this.userForm.reset();
           localStorage.setItem('token', value.token);
           this.authService.loggedIn.set(true);
-          this.router.navigate(['links']);
+          this.router.navigate(['extract']);
         },
         error: err => {
           this.messageService.add({severity: 'error', detail: 'Invalid email or password'});
