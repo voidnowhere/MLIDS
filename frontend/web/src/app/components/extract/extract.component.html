@@ -1,0 +1,16 @@
+<div class="flex align-items-center flex-column">
+  <h2>Upload you id card</h2>
+  @if (!loading) {
+    <p-button label="Choose" [icon]="PrimeIcons.UPLOAD" (onClick)="inputFile.click()"></p-button>
+    <input type="file" [hidden]="true" #inputFile (change)="onSelectImage($event)">
+    @if (data != null) {
+      <div class="flex gap-2 mt-5 flex-column">
+        <div>NIC: {{ data.cin ?? '' }}</div>
+        <div>Last name: {{ data.last_name ?? '' }}</div>
+        <div>First name: {{ data.first_name ?? '' }}</div>
+      </div>
+    }
+  } @else {
+    <p-progressSpinner></p-progressSpinner>
+  }
+</div>

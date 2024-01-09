@@ -1,0 +1,63 @@
+services:
+  frontend-web:
+    container_name: 'frontend-web'
+    image: node:20
+    working_dir: /app
+    volumes:
+      - ./frontend/web:/app
+    ports:
+      - 4200:4200
+    entrypoint: [ 'sh', '-c', 'npm install -g npm && npm install -g @angular/cli && npm install && ng serve --host 0.0.0.0 --poll' ]
+
+  id-card-service:
+    container_name: id-card-service
+    build:
+      context: ./backend/id-card-service
+      dockerfile: Dockerfile
+    working_dir: /app
+    volumes:
+      - ./backend/id-card-service:/app
+
+  eureka-service:
+    container_name: eureka-service
+    image: openjdk:21
+    volumes:
+      - ./backend/eureka-service:/app
+    ports:
+      - '8761:8761'
+    working_dir: /app
+    entrypoint: [ 'sh', '-c', "sed -i -e 's/\r$//' ./mvnw && chmod u+x ./mvnw && ./mvnw spring-boot:run" ]
+
+  gateway-service:
+    container_name: gateway-service
+    image: openjdk:21
+    volumes:
+      - ./backend/gateway-service:/app
+    ports:
+      - '8080:8080'
+    working_dir: /app
+    entrypoint: [ 'sh', '-c', "sed -i -e 's/\r$//' ./mvnw && chmod u+x ./mvnw && ./mvnw spring-boot:run" ]
+    depends_on:
+      - eureka-service
+
+  auth-service:
+    container_name: auth-service
+    image: openjdk:21
+    volumes:
+      - ./backend/auth-service:/app
+    working_dir: /app
+    entrypoint: [ 'sh', '-c', "sed -i -e 's/\r$//' ./mvnw && chmod u+x ./mvnw && ./mvnw spring-boot:run" ]
+    depends_on:
+      - eureka-service
+      - gateway-service
+      - auth-db
+
+  auth-db:
+    container_name: auth-db
+    image: mysql:8
+    volumes:
+      - ./backend/auth-service/docker/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+      MYSQL_DATABASE: auth-service

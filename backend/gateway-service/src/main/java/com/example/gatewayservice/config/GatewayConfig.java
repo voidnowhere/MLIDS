@@ -24,6 +24,10 @@ public class GatewayConfig {
                         .path("/api/auth/**")
                         .filters(f -> f.filter(filter))
                         .uri("lb://auth-service")
+                ).route("auth-service", r -> r
+                        .path("/api/extract")
+                        .filters(f -> f.filter(filter))
+                        .uri("http://id-card-service:5000")
                 ).build();
     }
 }
