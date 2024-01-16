@@ -1,13 +1,11 @@
 services:
-  frontend-web:
-    container_name: 'frontend-web'
-    image: node:20
-    working_dir: /app
-    volumes:
-      - ./frontend/web:/app
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
-      - 4200:4200
-    entrypoint: [ 'sh', '-c', 'npm install -g npm && npm install -g @angular/cli && npm install && ng serve --host 0.0.0.0 --poll' ]
+      - 8000:80
 
   id-card-service:
     container_name: id-card-service
@@ -20,43 +18,44 @@ services:
 
   eureka-service:
     container_name: eureka-service
-    image: openjdk:21
-    volumes:
-      - ./backend/eureka-service:/app
+    build:
+      context: ./backend/eureka-service
+      dockerfile: Dockerfile
     ports:
-      - '8761:8761'
-    working_dir: /app
-    entrypoint: [ 'sh', '-c', "sed -i -e 's/\r$//' ./mvnw && chmod u+x ./mvnw && ./mvnw spring-boot:run" ]
+      - 8761:8761
 
   gateway-service:
     container_name: gateway-service
-    image: openjdk:21
-    volumes:
-      - ./backend/gateway-service:/app
+    build:
+      context: ./backend/gateway-service
+      dockerfile: Dockerfile
     ports:
-      - '8080:8080'
-    working_dir: /app
-    entrypoint: [ 'sh', '-c', "sed -i -e 's/\r$//' ./mvnw && chmod u+x ./mvnw && ./mvnw spring-boot:run" ]
+      - 8080:8080
+    environment:
+      - EUREKA_DEFAULT_ZONE=http://eureka-service:8761/eureka
     depends_on:
       - eureka-service
 
   auth-service:
     container_name: auth-service
-    image: openjdk:21
-    volumes:
-      - ./backend/auth-service:/app
-    working_dir: /app
-    entrypoint: [ 'sh', '-c', "sed -i -e 's/\r$//' ./mvnw && chmod u+x ./mvnw && ./mvnw spring-boot:run" ]
+    build:
+      context: ./backend/auth-service
+      dockerfile: Dockerfile
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/auth-service
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=
+      - EUREKA_DEFAULT_ZONE=http://eureka-service:8761/eureka
     depends_on:
+      - db
       - eureka-service
       - gateway-service
-      - auth-db
 
-  auth-db:
-    container_name: auth-db
+  db:
+    container_name: db
     image: mysql:8
     volumes:
-      - ./backend/auth-service/docker/mysql:/var/lib/mysql
+      - ./docker/db:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: ""
       MYSQL_ALLOW_EMPTY_PASSWORD: yes

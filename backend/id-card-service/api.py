@@ -190,3 +190,6 @@ def decode_predictions(scores, geometry):
 
     # return a tuple of the bounding boxes and associated confidences
     return (rects, confidences)
+
+if __name__ == '__main__':
+    app.run()
